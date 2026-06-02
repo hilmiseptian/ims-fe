@@ -1,0 +1,199 @@
+@use "@angular/material" as mat;
+
+// ─── CSS Variables ────────────────────────────────────────────────────────────
+:root {
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  --header-height: 64px;
+  --surface: #ffffff;
+  --surface-variant: #f4f6f9;
+  --border: #e2e8f0;
+  --text-primary: #1a1f2e;
+  --text-secondary: #64748b;
+  --accent: #4f46e5;
+  --accent-light: #eef2ff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+// ─── Base Reset ───────────────────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--surface-variant);
+  -webkit-font-smoothing: antialiased;
+}
+
+// ─── Material Overrides ───────────────────────────────────────────────────────
+.mat-mdc-card {
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-flat-button {
+  border-radius: var(--radius-sm) !important;
+  font-family: "DM Sans", sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    border-radius: var(--radius-sm) !important;
+  }
+}
+
+.mat-mdc-table {
+  background: var(--surface) !important;
+  .mat-mdc-header-row {
+    background: var(--surface-variant);
+  }
+  .mat-mdc-header-cell {
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+  .mat-mdc-row:last-child .mat-mdc-cell {
+    border-bottom: none;
+  }
+}
+
+.mat-mdc-paginator {
+  background: transparent !important;
+  border-top: 1px solid var(--border);
+}
+
+.mat-mdc-dialog-container {
+  border-radius: var(--radius) !important;
+}
+
+// ─── Chip / Badge ─────────────────────────────────────────────────────────────
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+  }
+  &.inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+  }
+  &.dot::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+// ─── Snackbar ─────────────────────────────────────────────────────────────────
+.snack-success .mdc-snackbar__surface {
+  background: #1e293b !important;
+  border-left: 4px solid var(--success) !important;
+}
+.snack-error .mdc-snackbar__surface {
+  background: #1e293b !important;
+  border-left: 4px solid var(--danger) !important;
+}
+.snack-info .mdc-snackbar__surface {
+  background: #1e293b !important;
+  border-left: 4px solid var(--accent) !important;
+}
+
+// ─── Page Header ─────────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+
+  &__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+}
+
+// ─── Loading Spinner Overlay ──────────────────────────────────────────────────
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+// ─── Form Card ────────────────────────────────────────────────────────────────
+.form-card {
+  max-width: 640px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+}
+
+// ─── Utility ──────────────────────────────────────────────────────────────────
+.w-full {
+  width: 100%;
+}
+.mt-16 {
+  margin-top: 16px;
+}
+.text-muted {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
