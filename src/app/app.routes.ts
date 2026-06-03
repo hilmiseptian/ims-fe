@@ -11,16 +11,20 @@ export const routes: Routes = [
       {
         path: 'login',
         loadComponent: () =>
-          import('./features/auth/login/login.component').then(m => m.LoginComponent)
+          import('./features/auth/login/login.component').then(
+            (m) => m.LoginComponent,
+          ),
       },
-      { path: '', redirectTo: 'login', pathMatch: 'full' }
-    ]
+      { path: '', redirectTo: 'login', pathMatch: 'full' },
+    ],
   },
   {
     path: '',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./shared/components/shell/shell.component').then(m => m.ShellComponent),
+      import('./shared/components/shell/shell.component').then(
+        (m) => m.ShellComponent,
+      ),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
@@ -28,7 +32,9 @@ export const routes: Routes = [
         data: { permission: 'dashboard.view' },
         canActivate: [permissionGuard],
         loadComponent: () =>
-          import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+          import('./features/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
       },
       {
         path: 'users',
@@ -38,23 +44,29 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import('./features/users/user-list/user-list.component').then(m => m.UserListComponent)
+              import('./features/users/user-list/user-list.component').then(
+                (m) => m.UserListComponent,
+              ),
           },
           {
             path: 'create',
             data: { permission: 'users.create' },
             canActivate: [permissionGuard],
             loadComponent: () =>
-              import('./features/users/user-form/user-form.component').then(m => m.UserFormComponent)
+              import('./features/users/user-form/user-form.component').then(
+                (m) => m.UserFormComponent,
+              ),
           },
           {
             path: ':id/edit',
             data: { permission: 'users.update' },
             canActivate: [permissionGuard],
             loadComponent: () =>
-              import('./features/users/user-form/user-form.component').then(m => m.UserFormComponent)
-          }
-        ]
+              import('./features/users/user-form/user-form.component').then(
+                (m) => m.UserFormComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'levels',
@@ -64,23 +76,29 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import('./features/levels/level-list/level-list.component').then(m => m.LevelListComponent)
+              import('./features/levels/level-list/level-list.component').then(
+                (m) => m.LevelListComponent,
+              ),
           },
           {
             path: 'create',
             data: { permission: 'levels.create' },
             canActivate: [permissionGuard],
             loadComponent: () =>
-              import('./features/levels/level-form/level-form.component').then(m => m.LevelFormComponent)
+              import('./features/levels/level-form/level-form.component').then(
+                (m) => m.LevelFormComponent,
+              ),
           },
           {
             path: ':id/edit',
             data: { permission: 'levels.update' },
             canActivate: [permissionGuard],
             loadComponent: () =>
-              import('./features/levels/level-form/level-form.component').then(m => m.LevelFormComponent)
-          }
-        ]
+              import('./features/levels/level-form/level-form.component').then(
+                (m) => m.LevelFormComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'pages',
@@ -90,37 +108,61 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import('./features/pages/page-list/page-list.component').then(m => m.PageListComponent)
+              import('./features/pages/page-list/page-list.component').then(
+                (m) => m.PageListComponent,
+              ),
           },
           {
             path: 'create',
             data: { permission: 'pages.create' },
             canActivate: [permissionGuard],
             loadComponent: () =>
-              import('./features/pages/page-form/page-form.component').then(m => m.PageFormComponent)
+              import('./features/pages/page-form/page-form.component').then(
+                (m) => m.PageFormComponent,
+              ),
           },
           {
             path: ':id/edit',
             data: { permission: 'pages.update' },
             canActivate: [permissionGuard],
             loadComponent: () =>
-              import('./features/pages/page-form/page-form.component').then(m => m.PageFormComponent)
-          }
-        ]
+              import('./features/pages/page-form/page-form.component').then(
+                (m) => m.PageFormComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'permissions',
         data: { permission: 'permissions.view' },
         canActivate: [permissionGuard],
         loadComponent: () =>
-          import('./features/permissions/permissions.component').then(m => m.PermissionsComponent)
+          import('./features/permissions/permissions.component').then(
+            (m) => m.PermissionsComponent,
+          ),
       },
       {
         path: 'unauthorized',
         loadComponent: () =>
-          import('./shared/components/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
-      }
-    ]
+          import('./shared/components/unauthorized/unauthorized.component').then(
+            (m) => m.UnauthorizedComponent,
+          ),
+      },
+      {
+        path: 'app/:pageRoute',
+        loadComponent: () =>
+          import('./features/pages/dynamic-page/dynamic-page.component').then(
+            (m) => m.DynamicPageComponent,
+          ),
+      },
+      {
+        path: 'app/:pageRoute/**',
+        loadComponent: () =>
+          import('./features/pages/dynamic-page/dynamic-page.component').then(
+            (m) => m.DynamicPageComponent,
+          ),
+      },
+    ],
   },
-  { path: '**', redirectTo: '/dashboard' }
+  { path: '**', redirectTo: '/dashboard' },
 ];

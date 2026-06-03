@@ -1,47 +1,17 @@
-import { Component, computed, signal, inject } from '@angular/core';
+// src/app/shared/components/shell/shell.component.ts
+
+import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
-import { AuthService } from '../../../core/services/auth.service';
 import { MatDividerModule } from '@angular/material/divider';
-
-interface NavItem {
-  label: string;
-  route: string;
-  icon: string;
-  permission: string;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  {
-    label: 'Dashboard',
-    route: '/dashboard',
-    icon: 'dashboard',
-    permission: 'dashboard.view',
-  },
-  { label: 'Users', route: '/users', icon: 'people', permission: 'users.view' },
-  {
-    label: 'Levels',
-    route: '/levels',
-    icon: 'layers',
-    permission: 'levels.view',
-  },
-  {
-    label: 'Pages',
-    route: '/pages',
-    icon: 'article',
-    permission: 'pages.view',
-  },
-  {
-    label: 'Permissions',
-    route: '/permissions',
-    icon: 'admin_panel_settings',
-    permission: 'permissions.view',
-  },
-];
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AuthService } from '../../../core/services/auth.service';
+import { PageService } from '../../../core/services/page.service';
+import { MenuItem } from '../../../core/models';
 
 @Component({
   selector: 'app-shell',
@@ -56,30 +26,63 @@ const NAV_ITEMS: NavItem[] = [
     MatTooltipModule,
     MatMenuModule,
     MatDividerModule,
+    MatProgressSpinnerModule,
   ],
   template: `
     <div class="shell" [class.collapsed]="collapsed()">
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar__brand">
-          <div class="brand-icon">
-            <mat-icon>shield</mat-icon>
-          </div>
+          <div class="brand-icon"><mat-icon>shield</mat-icon></div>
           <span class="brand-name">UAM</span>
         </div>
 
         <nav class="sidebar__nav">
-          @for (item of visibleNavItems(); track item.route) {
-            <a
-              class="nav-item"
-              [routerLink]="item.route"
-              routerLinkActive="nav-item--active"
-              [matTooltip]="collapsed() ? item.label : ''"
-              matTooltipPosition="right"
-            >
-              <mat-icon class="nav-item__icon">{{ item.icon }}</mat-icon>
-              <span class="nav-item__label">{{ item.label }}</span>
-            </a>
+          @if (menuLoading()) {
+            <div class="menu-loading"><mat-spinner diameter="24" /></div>
+          } @else {
+            @for (item of menuItems(); track item.id) {
+              @if (item.children && item.children.length > 0) {
+                <!-- Parent with children -->
+                <div class="nav-group">
+                  <div
+                    class="nav-group__header"
+                    [matTooltip]="collapsed() ? item.label : ''"
+                    matTooltipPosition="right"
+                  >
+                    <mat-icon class="nav-item__icon">{{ item.icon }}</mat-icon>
+                    <span class="nav-item__label">{{ item.label }}</span>
+                    <mat-icon class="nav-group__chevron">expand_more</mat-icon>
+                  </div>
+                  <div class="nav-group__children">
+                    @for (child of item.children; track child.id) {
+                      <a
+                        class="nav-item nav-item--child"
+                        [routerLink]="child.route_path"
+                        routerLinkActive="nav-item--active"
+                      >
+                        <mat-icon class="nav-item__icon">{{
+                          child.icon
+                        }}</mat-icon>
+                        <span class="nav-item__label">{{ child.label }}</span>
+                      </a>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <!-- Flat item -->
+                <a
+                  class="nav-item"
+                  [routerLink]="item.route_path"
+                  routerLinkActive="nav-item--active"
+                  [matTooltip]="collapsed() ? item.label : ''"
+                  matTooltipPosition="right"
+                >
+                  <mat-icon class="nav-item__icon">{{ item.icon }}</mat-icon>
+                  <span class="nav-item__label">{{ item.label }}</span>
+                </a>
+              }
+            }
           }
         </nav>
 
@@ -95,7 +98,6 @@ const NAV_ITEMS: NavItem[] = [
 
       <!-- Main -->
       <div class="main">
-        <!-- Header -->
         <header class="header">
           <div class="header__left">
             <button
@@ -107,29 +109,25 @@ const NAV_ITEMS: NavItem[] = [
             </button>
             <div class="breadcrumb-title">{{ currentUser()?.level_name }}</div>
           </div>
-
           <div class="header__right">
             <button
               mat-button
               [matMenuTriggerFor]="userMenu"
               class="user-button"
             >
-              <div class="user-avatar">
-                {{ initials() }}
-              </div>
+              <div class="user-avatar">{{ initials() }}</div>
               <div class="user-info">
                 <span class="user-name">{{ currentUser()?.full_name }}</span>
                 <span class="user-role">{{ currentUser()?.username }}</span>
               </div>
               <mat-icon>expand_more</mat-icon>
             </button>
-
             <mat-menu #userMenu="matMenu" xPosition="before">
               <button mat-menu-item disabled>
                 <mat-icon>person</mat-icon>
                 <span>{{ currentUser()?.email }}</span>
               </button>
-              <mat-divider></mat-divider>
+              <mat-divider />
               <button mat-menu-item (click)="logout()">
                 <mat-icon color="warn">logout</mat-icon>
                 <span>Sign Out</span>
@@ -137,8 +135,6 @@ const NAV_ITEMS: NavItem[] = [
             </mat-menu>
           </div>
         </header>
-
-        <!-- Content -->
         <main class="content">
           <router-outlet />
         </main>
@@ -147,13 +143,12 @@ const NAV_ITEMS: NavItem[] = [
   `,
   styles: [
     `
+      /* (same structural styles as before, additions below) */
       .shell {
         display: flex;
         height: 100vh;
         overflow: hidden;
       }
-
-      /* ─── Sidebar ──────────────────────────────────────────────── */
       .sidebar {
         width: var(--sidebar-width);
         min-width: var(--sidebar-width);
@@ -166,12 +161,10 @@ const NAV_ITEMS: NavItem[] = [
           min-width 0.25s ease;
         overflow: hidden;
       }
-
       .collapsed .sidebar {
         width: var(--sidebar-collapsed-width);
         min-width: var(--sidebar-collapsed-width);
       }
-
       .sidebar__brand {
         display: flex;
         align-items: center;
@@ -181,7 +174,6 @@ const NAV_ITEMS: NavItem[] = [
         white-space: nowrap;
         overflow: hidden;
       }
-
       .brand-icon {
         width: 36px;
         height: 36px;
@@ -191,12 +183,11 @@ const NAV_ITEMS: NavItem[] = [
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        mat-icon {
-          font-size: 20px;
-          color: white;
-        }
       }
-
+      .brand-icon mat-icon {
+        font-size: 20px;
+        color: white;
+      }
       .brand-name {
         font-size: 17px;
         font-weight: 700;
@@ -208,17 +199,20 @@ const NAV_ITEMS: NavItem[] = [
         opacity: 0;
         width: 0;
       }
-
-      /* ─── Nav ──────────────────────────────────────────────────── */
       .sidebar__nav {
         flex: 1;
         padding: 12px 10px;
         display: flex;
         flex-direction: column;
         gap: 2px;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
       }
-
+      .menu-loading {
+        display: flex;
+        justify-content: center;
+        padding: 24px;
+      }
       .nav-item {
         display: flex;
         align-items: center;
@@ -239,28 +233,25 @@ const NAV_ITEMS: NavItem[] = [
         font-family: 'DM Sans', sans-serif;
         font-size: 14px;
         font-weight: 500;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.06);
-          color: white;
-        }
-
-        &--active {
-          background: var(--accent-light);
-          color: var(--accent);
-          mat-icon {
-            color: var(--accent);
-          }
-        }
       }
-
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
+      }
+      .nav-item--active {
+        background: var(--accent-light);
+        color: var(--accent);
+      }
+      .nav-item--child {
+        padding-left: 36px;
+        font-size: 13px;
+      }
       .nav-item__icon {
         font-size: 20px;
         width: 20px;
         height: 20px;
         flex-shrink: 0;
       }
-
       .nav-item__label {
         transition: opacity 0.2s;
       }
@@ -269,21 +260,39 @@ const NAV_ITEMS: NavItem[] = [
         width: 0;
         overflow: hidden;
       }
-
+      .nav-group__header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: #94a3b8;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .nav-group__header:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
+      }
+      .nav-group__chevron {
+        margin-left: auto;
+        font-size: 18px;
+      }
       .sidebar__footer {
         padding: 10px;
         border-top: 1px solid rgba(255, 255, 255, 0.06);
       }
-
-      /* ─── Main ─────────────────────────────────────────────────── */
+      .collapse-btn {
+        color: #64748b;
+      }
       .main {
         flex: 1;
         display: flex;
         flex-direction: column;
         overflow: hidden;
       }
-
-      /* ─── Header ───────────────────────────────────────────────── */
       .header {
         height: var(--header-height);
         background: var(--surface);
@@ -295,33 +304,27 @@ const NAV_ITEMS: NavItem[] = [
         gap: 16px;
         flex-shrink: 0;
       }
-
       .header__left {
         display: flex;
         align-items: center;
         gap: 16px;
       }
-
       .mobile-menu-btn {
         display: none;
       }
-
       .breadcrumb-title {
         font-size: 13px;
-        color: var(--text-secondary);
         font-weight: 500;
         background: var(--accent-light);
         color: var(--accent);
         padding: 3px 10px;
         border-radius: 20px;
       }
-
       .header__right {
         display: flex;
         align-items: center;
         gap: 8px;
       }
-
       .user-button {
         display: flex;
         align-items: center;
@@ -330,7 +333,6 @@ const NAV_ITEMS: NavItem[] = [
         padding: 6px 10px !important;
         border-radius: 8px !important;
       }
-
       .user-avatar {
         width: 34px;
         height: 34px;
@@ -343,12 +345,10 @@ const NAV_ITEMS: NavItem[] = [
         font-size: 13px;
         font-weight: 700;
       }
-
       .user-info {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        text-align: left;
         line-height: 1.3;
       }
       .user-name {
@@ -360,15 +360,11 @@ const NAV_ITEMS: NavItem[] = [
         font-size: 11px;
         color: var(--text-secondary);
       }
-
-      /* ─── Content ──────────────────────────────────────────────── */
       .content {
         flex: 1;
         overflow-y: auto;
         padding: 28px;
       }
-
-      /* ─── Responsive ───────────────────────────────────────────── */
       @media (max-width: 768px) {
         .sidebar {
           position: fixed;
@@ -397,12 +393,15 @@ const NAV_ITEMS: NavItem[] = [
     `,
   ],
 })
-export class ShellComponent {
+export class ShellComponent implements OnInit {
   private auth = inject(AuthService);
+  private pageService = inject(PageService);
+
   collapsed = signal(false);
+  menuLoading = signal(true);
+  menuItems = signal<MenuItem[]>([]);
 
   currentUser = this.auth.currentUser;
-  permissions = this.auth.permissions;
 
   initials = computed(() => {
     const name = this.currentUser()?.full_name || '';
@@ -414,14 +413,24 @@ export class ShellComponent {
       .toUpperCase();
   });
 
-  visibleNavItems = computed(() => {
-    return NAV_ITEMS.filter((item) => this.auth.hasPermission(item.permission));
-  });
+  ngOnInit(): void {
+    this.loadMenu();
+  }
+
+  loadMenu(): void {
+    this.menuLoading.set(true);
+    this.pageService.getMenu().subscribe({
+      next: (items) => {
+        this.menuItems.set(items);
+        this.menuLoading.set(false);
+      },
+      error: () => this.menuLoading.set(false),
+    });
+  }
 
   toggleCollapse(): void {
     this.collapsed.update((v) => !v);
   }
-
   logout(): void {
     this.auth.logout();
   }

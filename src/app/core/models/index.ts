@@ -159,3 +159,40 @@ export interface MenuItem {
   icon: string;
   permission: string;
 }
+
+
+export interface Page {
+  id: number;
+  name: string;
+  route_path: string;
+  description: string;
+  sort_order: number;
+  icon: string;
+  permission_key: string | null;
+  parent_id: number | null;
+  is_system: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MenuItem {
+  id: number;
+  label: string;
+  route_path: string;
+  icon: string;
+  permission_key: string | null;
+  parent_id: number | null;
+  children?: MenuItem[];
+}
+
+export interface CreatePageRequest {
+  name: string;
+  route_path: string;
+  description: string;
+  sort_order: number;
+  icon: string;
+  permission_key: string | null;
+  parent_id: number | null;
+  is_active: boolean;
+}

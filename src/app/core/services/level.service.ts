@@ -31,8 +31,11 @@ export class LevelService {
     );
   }
 
+  // src/app/core/services/level.service.ts
+
   getAllActive(): Observable<ApiResponse<Level[]>> {
-    return this.http.get<ApiResponse<Level[]>>(`${this.url}`);
+    // Call dedicated /active endpoint that returns a plain array, not paginated
+    return this.http.get<ApiResponse<Level[]>>(`${this.url}/active`);
   }
 
   getById(id: number): Observable<ApiResponse<Level>> {
